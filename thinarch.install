@@ -1,0 +1,48 @@
+post_install(){
+    #### Client installation
+    mv -b /etc/dhcpd.conf{.thinarch,}
+    mv -b /usr/lib/systemd/system/tftpd.service{.thinarch,}
+    mv -b /etc/exports{.thinarch,}
+
+    truncate -s 2G /srv/arch.img
+    mkfs.btrfs /srv/arch.img
+    export root=/srv/arch
+    mkdir -p "$root"
+    mount -o loop,discard,compress=lzo /srv/arch.img "$root"
+
+    pacstrap -d "$root" base mkinitcpio-nfs-utils nfs-utils
+
+    sed s/nfsmount/mount.nfs4/ "$root/usr/lib/initcpio/hooks/net" > "$root/usr/lib/initcpio/hooks/net_nfs4"
+    cp $root/usr/lib/initcpio/install/net{,_nfs4}
+
+    sed -i s/\(^MODULES="\)\(.*\)\("\)/\1\2 nfsv4 \3/ "$root/etc/mkinitcpio.conf"
+    sed -i s/\(^HOOKS="\)\(.*\)\("\)/\1\2 net_nfs4 \3/ "$root/etc/mkinitcpio.conf"
+    sed -i s/\(^BINARIES="\)\(.*\)\("\)/\1\2 /usr/bin/mount.nfs4 \3/ "$root/etc/mkinitcpio.conf"
+		
+    arch-chroot "$root" /usr/bin/mkinitcpio -p linux
+
+    #### Client configuration
+
+    #TODO: In addition to the setup mentioned here, you should also set up your hostname, timezone, locale, and keymap, and follow any other relevant parts of the Installation Guide.
+    
+    pacman --root "$root" --dbpath "$root/var/lib/pacman" -S grub
+    arch-chroot /srv/arch grub-mknetdir --net-directory=/boot --subdir=grub
+
+    cat <<EOF >> "$root/boot/grub/grub.cfg"
+menuentry "Arch Linux Thin Client" {
+    linux /vmlinuz-linux quiet add_efi_memmap ip=::::::dhcp nfsroot=10.0.0.1:/arch
+    initrd /initramfs-linux.img
+}
+EOF
+
+    cat <<EOF > "$root/etc/modules-load.d/thinarch.conf"
+#extra modules needed for the client machine (video card, keyboard, usb, etc)
+tg3
+e1000e
+e1000
+radeon
+EOF
+
+    echo "Make sure to add the extra modules needed by the client machine hardware"
+    echo "to the /etc/modules-load.d/thinarch.conf file."
+}

@@ -1,0 +1,9 @@
+[Unit]
+Description=hpa's original TFTP daemon
+
+[Service]
+ExecStart=/usr/sbin/in.tftpd -s /srv/arch/boot
+StandardInput=socket
+StandardOutput=inherit
+StandardError=journal
+
