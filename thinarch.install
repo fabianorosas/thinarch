@@ -1,9 +1,11 @@
 post_install(){
-    #### Client installation
+    ##------------------------------
+    # Client installation
+
     mv -b /etc/dhcpd.conf{.thinarch,}
     mv -b /usr/lib/systemd/system/tftpd.service{.thinarch,}
     mv -b /etc/exports{.thinarch,}
-    mv -b /usr/lib/systemd/system/thinarch.service{.thinarch,}
+    mv -b /usr/lib/systemd/system/thinarch.target{.thinarch,}
 
     truncate -s 2G /srv/arch.img
     mkfs.btrfs /srv/arch.img
@@ -22,7 +24,8 @@ post_install(){
 		
     arch-chroot "$root" /usr/bin/mkinitcpio -p linux
 
-    #### Client configuration
+    ##------------------------------
+    # Client configuration
 
     #TODO: In addition to the setup mentioned here, you should also set up your hostname, timezone, locale, and keymap, and follow any other relevant parts of the Installation Guide.
     
@@ -46,8 +49,6 @@ EOF
     
     arch-chroot "$root" /usr/bin/mkinitcpio -p linux
 
-
-    
     echo "############################################################"
     echo "Make sure to add the extra modules needed by the client machine hardware"
     echo "to the /etc/modules-load.d/thinarch.conf file and update the initramfs."
@@ -57,4 +58,15 @@ EOF
     echo ""
     echo -e "Start the system with \033[32msystemctl start thinarch"
     echo "############################################################"
+}
+
+post_remove(){
+    rm /usr/lib/systemd/system/thinarch.target
+
+    rm /srv/arch.img
+    export root=/srv/arch
+    umount "$root"
+    rmdir "$root"
+
+# UNDO: In addition to the setup mentioned here, you should also set up your hostname, timezone, locale, and keymap, and follow any other relevant parts of the Installation Guide.
 }
