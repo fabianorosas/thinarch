@@ -3,6 +3,7 @@ post_install(){
     mv -b /etc/dhcpd.conf{.thinarch,}
     mv -b /usr/lib/systemd/system/tftpd.service{.thinarch,}
     mv -b /etc/exports{.thinarch,}
+    mv -b /usr/lib/systemd/system/thinarch.service{.thinarch,}
 
     truncate -s 2G /srv/arch.img
     mkfs.btrfs /srv/arch.img
@@ -26,7 +27,7 @@ post_install(){
     #TODO: In addition to the setup mentioned here, you should also set up your hostname, timezone, locale, and keymap, and follow any other relevant parts of the Installation Guide.
     
     pacman --root "$root" --dbpath "$root/var/lib/pacman" -S grub
-    arch-chroot /srv/arch grub-mknetdir --net-directory=/boot --subdir=grub
+    arch-chroot "$root" grub-mknetdir --net-directory=/boot --subdir=grub
 
     cat <<EOF >> "$root/boot/grub/grub.cfg"
 menuentry "Arch Linux Thin Client" {
@@ -42,7 +43,18 @@ e1000e
 e1000
 radeon
 EOF
+    
+    arch-chroot "$root" /usr/bin/mkinitcpio -p linux
 
+
+    
+    echo "############################################################"
     echo "Make sure to add the extra modules needed by the client machine hardware"
-    echo "to the /etc/modules-load.d/thinarch.conf file."
+    echo "to the /etc/modules-load.d/thinarch.conf file and update the initramfs."
+    echo ""
+    echo -e "To prepare the system and add users to it, run: \033[32mta-prepusers file"
+    echo "where file is the list of login:##### (like fabiano:123456)"
+    echo ""
+    echo -e "Start the system with \033[32msystemctl start thinarch"
+    echo "############################################################"
 }
