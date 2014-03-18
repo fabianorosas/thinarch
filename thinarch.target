@@ -2,7 +2,7 @@
 Description="Thinarch thin-client server"
 Requires=tftpd.socket tftpd.service rpc-idmapd rpc-mountd
 Wants=dhcpd4.service 
-PropagatesReloadTo=dhcp.service tftpd.socket tftpd.service rpc-idmapd rpc-mountd
+PropagatesReloadTo=dhcp4.service tftpd.socket tftpd.service rpc-idmapd rpc-mountd
 DefaultDependencies=true
 After=network.target
 
