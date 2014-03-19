@@ -13,14 +13,14 @@ post_install(){
     mkdir -p "$root"
     mount -o loop,discard,compress=lzo /srv/arch.img "$root"
 
-    pacstrap -d "$root" base mkinitcpio-nfs-utils nfs-utils
+    pacstrap -c -d "$root" base mkinitcpio-nfs-utils nfs-utils
 
-    sed s/nfsmount/mount.nfs4/ "$root/usr/lib/initcpio/hooks/net" > "$root/usr/lib/initcpio/hooks/net_nfs4"
+    sed 's/nfsmount/mount.nfs4/' "$root/usr/lib/initcpio/hooks/net" > "$root/usr/lib/initcpio/hooks/net_nfs4"
     cp $root/usr/lib/initcpio/install/net{,_nfs4}
 
-    sed -i s/\(^MODULES="\)\(.*\)\("\)/\1\2 nfsv4 \3/ "$root/etc/mkinitcpio.conf"
-    sed -i s/\(^HOOKS="\)\(.*\)\("\)/\1\2 net_nfs4 \3/ "$root/etc/mkinitcpio.conf"
-    sed -i s/\(^BINARIES="\)\(.*\)\("\)/\1\2 /usr/bin/mount.nfs4 \3/ "$root/etc/mkinitcpio.conf"
+    sed -i 's/\(^MODULES="\)\(.*\)\("\)/\1\2 nfsv4 \3/' "$root/etc/mkinitcpio.conf"
+    sed -i 's/\(^HOOKS="\)\(.*\)\("\)/\1\2 net_nfs4 \3/' "$root/etc/mkinitcpio.conf"
+    sed -i 's/\(^BINARIES="\)\(.*\)\("\)/\1\2 /usr/bin/mount.nfs4 \3/' "$root/etc/mkinitcpio.conf"
 		
     arch-chroot "$root" /usr/bin/mkinitcpio -p linux
 
@@ -29,7 +29,7 @@ post_install(){
 
     #TODO: In addition to the setup mentioned here, you should also set up your hostname, timezone, locale, and keymap, and follow any other relevant parts of the Installation Guide.
     
-    pacman --root "$root" --dbpath "$root/var/lib/pacman" -S grub
+    pacman --noconfirm --root "$root" --dbpath "$root/var/lib/pacman" -S grub
     arch-chroot "$root" grub-mknetdir --net-directory=/boot --subdir=grub
 
     cat <<EOF >> "$root/boot/grub/grub.cfg"
@@ -50,14 +50,21 @@ EOF
     arch-chroot "$root" /usr/bin/mkinitcpio -p linux
 
     echo "############################################################"
-    echo "Make sure to add the extra modules needed by the client machine hardware"
-    echo "to the /etc/modules-load.d/thinarch.conf file and update the initramfs."
-    echo ""
-    echo -e "To prepare the system and add users to it, run: \033[32mta-prepusers file"
-    echo "where file is the list of login:##### (like fabiano:123456)"
-    echo ""
-    echo -e "Start the system with \033[32msystemctl start thinarch"
+    echo -e "Things left to do \033[1minside the chroot\033[0m:"
+    echo    "    - Make sure to add the extra modules needed by the client machine hardware"
+    echo    "      to the $root/etc/modules-load.d/thinarch.conf file and update the initramfs."
+    echo    ""
+    echo    "    - Install the rest of the packages like DEs, text editors and such."
+    echo    ""
+    echo -e "    - Prepare the system and add users to it: \033[32mta-prepusers file\033[0m"
+    echo    "         where file is the list of users and passwords in the format login:passwd"
+    echo    ""
+    echo -e "Start the system with \033[32msystemctl start thinarch\033[0m"
     echo "############################################################"
+}
+
+pre_remove(){
+    systemctl stop thinarch
 }
 
 post_remove(){
@@ -68,5 +75,5 @@ post_remove(){
     umount "$root"
     rmdir "$root"
 
-# UNDO: In addition to the setup mentioned here, you should also set up your hostname, timezone, locale, and keymap, and follow any other relevant parts of the Installation Guide.
+    # UNDO: In addition to the setup mentioned here, you should also set up your hostname, timezone, locale, and keymap, and follow any other relevant parts of the Installation Guide.
 }
