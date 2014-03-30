@@ -12,7 +12,7 @@ source=(dhcpd.conf exports tftpd.service thinarch.install thinarch.target ta-pre
 md5sums=('6f4554e2176734530c3b3453b3e6bb24'
          '75ab2111958fb6957f9a920a47836784'
          'aa170ca00ad48b5053cc26b92e1083e4'
-         'ce54aeff7c74478bb03d1bcf3d074695'
+         '69c49e6d8c0a89d6a22fd8213cd773b4'
          '19b603d26e011eb1cb291443dac85615'
          '449238bf6330cc1ca2cdfd7a77ad42b7')
 
