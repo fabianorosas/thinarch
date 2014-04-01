@@ -12,8 +12,8 @@ source=(dhcpd.conf exports tftpd.service thinarch.install ta-manage)
 md5sums=('6f4554e2176734530c3b3453b3e6bb24'
          '75ab2111958fb6957f9a920a47836784'
          'aa170ca00ad48b5053cc26b92e1083e4'
-         'ea4981f77ca977070992987c85b67596'
-         '22c89f418caa01fb95357b27d329b448')
+         '4219052fe6440fc96628ef2e602e076f'
+         'b57171cbcb0673302b8c21da8960b5b5')
 
 package() {
     cd "$srcdir"

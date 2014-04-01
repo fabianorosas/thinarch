@@ -12,13 +12,13 @@ post_install(){
     export root=/srv/arch
     mkdir -p "$root"
     mount -o loop,discard,compress=lzo /srv/arch.img "$root"
-    pacstrap -c -d "$root" base mkinitcpio-nfs-utils nfs-utils #&>/dev/null
+    pacstrap -c -d "$root" base mkinitcpio-nfs-utils nfs-utils >/dev/null
 
     sed 's/nfsmount/mount.nfs4/' "$root/usr/lib/initcpio/hooks/net" > "$root/usr/lib/initcpio/hooks/net_nfs4"
     cp $root/usr/lib/initcpio/install/net{,_nfs4}
 
     cat <<EOF > "$root/etc/ta-mkinitcpio.conf"
-MODULES="nfsv4 tg3 e1000e e1000 radeon"
+MODULES="nfsv4 tg3 e1000e e1000 radeon r8169"
 BINARIES="/usr/bin/mount.nfs4"
 FILES=""
 HOOKS="base udev autodetect keyboard modconf block filesystems net_nfs4"
@@ -32,8 +32,8 @@ EOF
     
     #TODO: In addition to the setup mentioned here, you should also set up your hostname, timezone, locale, and keymap, and follow any other relevant parts of the Installation Guide.
     
-    pacman --noconfirm --root "$root" --dbpath "$root/var/lib/pacman" -S grub #>/dev/null
-    arch-chroot "$root" grub-mknetdir --net-directory=/boot --subdir=grub #>/dev/null
+    pacman --noconfirm --root "$root" --dbpath "$root/var/lib/pacman" -S grub >/dev/null
+    arch-chroot "$root" grub-mknetdir --net-directory=/boot --subdir=grub >/dev/null
 
     cat <<EOF > "$root/boot/grub/grub.cfg"
 menuentry "Arch Linux Thin Client" {
@@ -41,6 +41,8 @@ menuentry "Arch Linux Thin Client" {
     initrd /initramfs-linux.img
 }
 EOF
+
+    pacman --noconfirm --root "$root" --dbpath "$root/var/lib/pacman" -S xorg-server xorg-server-utils xorg-xinit >/dev/null
     
     echo -e "\033[0m############################################################"
     echo -e "Things left to do \033[1minside the chroot\033[0m:"

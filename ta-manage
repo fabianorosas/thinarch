@@ -21,11 +21,10 @@ if [ "$1" = "mount" ]
 then
     export root=/srv/arch
     mkdir -p "$root"
-    cd /srv
-    mount -o loop,discard,compress=lzo arch.img "$root"
+    mount -o loop,discard,compress=lzo /srv/arch.img "$root"
 elif [ "$1" = "umount" ]
 then
-    umount "$root"
+    umount /srv/arch
 else 
     services=("dhcpd4.service" "tftpd.socket" "tftpd.service" "rpc-mountd" "rpc-idmapd")
 
