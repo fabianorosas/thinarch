@@ -14,19 +14,29 @@ message() {
 
 [ "$1" = "" ] && message && exit 0
 
-services=("dhcpd4.service" "tftpd.socket" "tftpd.service" "rpc-mountd" "rpc-idmapd")
+if [ "$1" = "mount" ]
+then
+    export root=/srv/arch
+    mkdir -p "$root"
+    mount -o loop,discard,compress=lzo /srv/arch.img "$root"
+elif [ "$1" = "umount" ]
+then
+    umount $root
+else 
+    services=("dhcpd4.service" "tftpd.socket" "tftpd.service" "rpc-mountd" "rpc-idmapd")
 
-for s in ${services[@]}
-do
-    if [ "$2" = "-f" ]
-    then
-	systemctl $1 $s
-    else
-	systemctl $1 $s | head -3
-    fi
-    
-    if [ "$1" = "status" ]
-    then
-	echo ""
-    fi
-done
+    for s in ${services[@]}
+    do
+	if [ "$2" = "-f" ]
+	then
+	    systemctl $1 $s
+	else
+	    systemctl $1 $s | head -3
+	fi
+	
+	if [ "$1" = "status" ]
+	then
+	    echo ""
+	fi
+    done
+fi

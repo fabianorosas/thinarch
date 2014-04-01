@@ -13,7 +13,7 @@ md5sums=('6f4554e2176734530c3b3453b3e6bb24'
          '75ab2111958fb6957f9a920a47836784'
          'aa170ca00ad48b5053cc26b92e1083e4'
          'ea4981f77ca977070992987c85b67596'
-         'ae9187b2c69eed8482a185ad58f79e7b')
+         '7a018b5f420280294b0c022c67fc7f7c')
 
 package() {
     cd "$srcdir"
