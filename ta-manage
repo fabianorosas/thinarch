@@ -6,6 +6,9 @@ message() {
   echo "  $0 <status|start|stop> [-f]"
   echo "     run systemctl <status|start|stop> in all component services"
   echo
+  echo "  $0 <mount|umount>"
+  echo "     mount or unmount the chroot"
+  echo
   echo "  -f"
   echo "     show full output of the commands"
   echo
@@ -18,10 +21,11 @@ if [ "$1" = "mount" ]
 then
     export root=/srv/arch
     mkdir -p "$root"
-    mount -o loop,discard,compress=lzo /srv/arch.img "$root"
+    cd /srv
+    mount -o loop,discard,compress=lzo arch.img "$root"
 elif [ "$1" = "umount" ]
 then
-    umount $root
+    umount "$root"
 else 
     services=("dhcpd4.service" "tftpd.socket" "tftpd.service" "rpc-mountd" "rpc-idmapd")
 
