@@ -52,7 +52,7 @@ EOF
     echo    "    - Install the rest of the packages like DEs, text editors and such."
     echo    "        \033[32mpacman --root "$root" --dbpath "$root/var/lib/pacman" -S <package ...>\033[0m"
     echo    ""
-    echo    "Set you IP address to the one specified in the /etc/dhcp.conf file [default 10.0.0.1]"
+    echo    "Set your IP address to the one specified in the /etc/dhcp.conf file [default 10.0.0.1]"
     echo    ""
     echo -e "Start the system with \033[32msystemctl start thinarch\033[0m"
     echo "############################################################"
