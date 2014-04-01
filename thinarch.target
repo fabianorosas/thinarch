@@ -1,8 +1,8 @@
 [Unit]
 Description="Thinarch thin-client server"
-Requires=tftpd.socket tftpd.service rpc-idmapd rpc-mountd
+Requires=tftpd.socket tftpd.service rpc-mountd rpc-idmapd
 Wants=dhcpd4.service 
-PropagatesReloadTo=dhcp4.service tftpd.socket tftpd.service rpc-idmapd rpc-mountd
+PropagatesReloadTo=dhcpd4.service tftpd.socket tftpd.service rpc-mountd rpc-idmapd
 DefaultDependencies=true
 After=network.target
 

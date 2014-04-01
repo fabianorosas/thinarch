@@ -1,0 +1,32 @@
+#!/bin/bash
+
+message() {
+  echo "usage:"  
+  echo
+  echo "  $0 <status|start|stop> [-f]"
+  echo "     run systemctl <status|start|stop> in all component services"
+  echo
+  echo "  -f"
+  echo "     show full output of the commands"
+  echo
+  exit 1
+}
+
+[ "$1" = "" ] && message && exit 0
+
+services=("dhcpd4.service" "tftpd.socket" "tftpd.service" "rpc-mountd" "rpc-idmapd")
+
+for s in ${services[@]}
+do
+    if [ "$2" = "-f" ]
+    then
+	systemctl $1 $s
+    else
+	systemctl $1 $s | head -3
+    fi
+    
+    if [ "$1" = "status" ]
+    then
+	echo ""
+    fi
+done

@@ -8,11 +8,11 @@ arch=('x86_64')
 license=('GPL')
 depends=("dhcp" "tftp-hpa" "nfs-utils" "devtools" "arch-install-scripts" "btrfs-progs")
 install=thinarch.install
-source=(dhcpd.conf exports tftpd.service thinarch.install thinarch.target ta-prepusers)
+source=(dhcpd.conf exports tftpd.service thinarch.install ta-manage ta-prepusers)
 md5sums=('6f4554e2176734530c3b3453b3e6bb24'
          '75ab2111958fb6957f9a920a47836784'
          'aa170ca00ad48b5053cc26b92e1083e4'
-         '69c49e6d8c0a89d6a22fd8213cd773b4'
+         'f6b510f73684c5c59ffb7bca12114f3e'
          '19b603d26e011eb1cb291443dac85615'
          '449238bf6330cc1ca2cdfd7a77ad42b7')
 
@@ -22,6 +22,6 @@ package() {
     install -Dm644 dhcpd.conf $pkgdir/etc/dhcpd.conf.thinarch
     install -Dm644 tftpd.service $pkgdir/usr/lib/systemd/system/tftpd.service.thinarch
     install -Dm644 exports $pkgdir/etc/exports.thinarch
-    install -Dm644 thinarch.target $pkgdir/usr/lib/systemd/system/thinarch.target.thinarch
+    install -Dm755 ta-manage $pkgdir/usr/bin/ta-manage
     install -Dm755 ta-prepusers $pkgdir/usr/bin/ta-prepusers
 }

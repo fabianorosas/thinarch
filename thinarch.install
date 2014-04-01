@@ -6,7 +6,6 @@ post_install(){
     mv -b /etc/dhcpd.conf{.thinarch,}
     mv -b /usr/lib/systemd/system/tftpd.service{.thinarch,}
     mv -b /etc/exports{.thinarch,}
-    mv -b /usr/lib/systemd/system/thinarch.target{.thinarch,}
 
     truncate -s 2G /srv/arch.img
     mkfs.btrfs /srv/arch.img >/dev/null
@@ -50,11 +49,11 @@ EOF
     echo -e "      \033[32mmkinitcpio -k /boot/vmlinuz-linux -c /etc/ta-mkinitcpio.conf -g /boot/initramfs-linux.img\033[0m"
     echo    ""
     echo    "    - Install the rest of the packages like DEs, text editors and such."
-    echo    "        \033[32mpacman --root "$root" --dbpath "$root/var/lib/pacman" -S <package ...>\033[0m"
+    echo -e "        \033[32mpacman --root "$root" --dbpath "$root/var/lib/pacman" -S <package ...>\033[0m"
     echo    ""
     echo    "Set your IP address to the one specified in the /etc/dhcp.conf file [default 10.0.0.1]"
     echo    ""
-    echo -e "Start the system with \033[32msystemctl start thinarch\033[0m"
+    echo -e "Start the system with \033[32mta-manage start\033[0m"
     echo "############################################################"
 }
 
@@ -63,8 +62,6 @@ pre_remove(){
 }
 
 post_remove(){
-    rm /usr/lib/systemd/system/thinarch.target
-
     rm /srv/arch.img
     export root=/srv/arch
     umount "$root"
