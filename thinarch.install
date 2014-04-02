@@ -30,7 +30,29 @@ EOF
     # Client configuration:
     echo "configuring client image..."
     
-    #TODO: In addition to the setup mentioned here, you should also set up your hostname, timezone, locale, and keymap, and follow any other relevant parts of the Installation Guide.
+    ## hostname:
+    echo "thinarch" > "$root/etc/hostname"
+    cat <<EOF > "$root/etc/hosts"
+# /etc/hosts: static lookup table for host names
+#
+
+#<ip-address>	<hostname.domain.org>	<hostname>
+127.0.0.1	localhost.localdomain	localhost	thinarch
+::1		localhost.localdomain	localhost
+
+# End of file     
+EOF
+
+    ## locale:
+    sed -i 's/^#\(en_US\.UTF-8 UTF-8\)/\1/' "$root/etc/locale.gen"
+    sed -i 's/^#\(pt_BR\.UTF-8 UTF-8\)/\1/' "$root/etc/locale.gen"
+    arch-chroot "$root" locale-gen
+    echo LANG=en_US.UTF-8 > "$root/etc/locale.conf"
+
+    ## timezone:
+    ln -s "$root/usr/share/zoneinfo/America/Sao_Paulo" "$root/etc/localtime"
+
+    #TODO: In addition to the setup mentioned here, you should also set up your and keymap, and follow any other relevant parts of the Installation Guide.
     
     pacman --noconfirm --root "$root" --dbpath "$root/var/lib/pacman" -S grub >/dev/null
     arch-chroot "$root" grub-mknetdir --net-directory=/boot --subdir=grub >/dev/null

@@ -12,7 +12,7 @@ source=(dhcpd.conf exports tftpd.service thinarch.install ta-manage)
 md5sums=('6f4554e2176734530c3b3453b3e6bb24'
          '75ab2111958fb6957f9a920a47836784'
          'aa170ca00ad48b5053cc26b92e1083e4'
-         '4219052fe6440fc96628ef2e602e076f'
+         '25e97a986a6bb41b082baeaa100d4291'
          'b57171cbcb0673302b8c21da8960b5b5')
 
 package() {
