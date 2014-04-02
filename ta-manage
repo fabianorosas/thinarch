@@ -3,11 +3,14 @@
 message() {
   echo "usage:"  
   echo
-  echo "  $0 <status|start|stop> [-f]"
-  echo "     run systemctl <status|start|stop> in all component services"
+  echo "  $0 <setup>"
+  echo "     execute initial configs"
   echo
   echo "  $0 <mount|umount>"
   echo "     mount or unmount the chroot"
+  echo
+  echo "  $0 <status|start|stop> [-f]"
+  echo "     run systemctl <status|start|stop> in all component services"
   echo
   echo "  -f"
   echo "     show full output of the commands"

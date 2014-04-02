@@ -43,17 +43,6 @@ EOF
 # End of file     
 EOF
 
-    ## locale:
-    sed -i 's/^#\(en_US\.UTF-8 UTF-8\)/\1/' "$root/etc/locale.gen"
-    sed -i 's/^#\(pt_BR\.UTF-8 UTF-8\)/\1/' "$root/etc/locale.gen"
-    arch-chroot "$root" locale-gen
-    echo LANG=en_US.UTF-8 > "$root/etc/locale.conf"
-
-    ## timezone:
-    ln -s "$root/usr/share/zoneinfo/America/Sao_Paulo" "$root/etc/localtime"
-
-    #TODO: In addition to the setup mentioned here, you should also set up your and keymap, and follow any other relevant parts of the Installation Guide.
-    
     pacman --noconfirm --root "$root" --dbpath "$root/var/lib/pacman" -S grub >/dev/null
     arch-chroot "$root" grub-mknetdir --net-directory=/boot --subdir=grub >/dev/null
 
@@ -65,7 +54,7 @@ menuentry "Arch Linux Thin Client" {
 EOF
 
     pacman --noconfirm --root "$root" --dbpath "$root/var/lib/pacman" -S xorg-server xorg-server-utils xorg-xinit >/dev/null
-    
+
     echo -e "\033[0m############################################################"
     echo -e "Things left to do \033[1minside the chroot\033[0m:"
     echo    "    - Make sure to add the extra modules needed by the client machine hardware"
@@ -74,6 +63,8 @@ EOF
     echo    ""
     echo    "    - Install the rest of the packages like DEs, text editors and such."
     echo -e "        \033[32mpacman --root "$root" --dbpath "$root/var/lib/pacman" -S <package ...>\033[0m"
+    echo    ""
+    echo    "    - Set up your locale, timezone, keymap and follow any other relevant parts of the Installation Guide."
     echo    ""
     echo    "Set your IP address to the one specified in the /etc/dhcp.conf file [default 10.0.0.1]"
     echo    ""
