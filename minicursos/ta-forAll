@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ `whoami` != root ]; then
+    echo Please run this script as root. Not sudo. root.
+    exit
+fi
+
+for login in $(ls /home)
+do
+    grep ^$login /etc/passwd > /dev/null
+    if [ $? == 0 ]
+    then
+        cp $1 /home/$login/
+        chown $login /home/$login
+    fi
+done
