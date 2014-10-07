@@ -1,4 +1,6 @@
-post_install(){
+#!/bin/bash
+
+client_install() {
     ##------------------------------------------------------------
     # Client installation:
     echo "installing client image..."
@@ -72,15 +74,49 @@ EOF
     echo "############################################################"
 }
 
-pre_remove(){
-    systemctl stop thinarch
+message() {
+  echo "usage:"  
+  echo
+  echo "  $0 <setup>"
+  echo "     execute initial configs"
+  echo
+  echo "  $0 <mount|umount>"
+  echo "     mount or unmount the chroot"
+  echo
+  echo "  $0 <status|start|stop> [-f]"
+  echo "     run systemctl <status|start|stop> in all component services"
+  echo
+  echo "  -f"
+  echo "     show full output of the commands"
+  echo
+  exit 1
 }
 
-post_remove(){
-    rm /srv/arch.img
+[ "$1" = "" ] && message && exit 0
+
+if [ "$1" = "mount" ]
+then
     export root=/srv/arch
-    umount "$root"
-    rmdir "$root"
+    mkdir -p "$root"
+    mount -o loop,discard,compress=lzo /srv/arch.img "$root"
+elif [ "$1" = "umount" ]
+then
+    umount /srv/arch
+else 
+    services=("dhcpd4.service" "tftpd.socket" "tftpd.service" "nfs-server.service")
 
-    # UNDO: In addition to the setup mentioned here, you should also set up your hostname, timezone, locale, and keymap, and follow any other relevant parts of the Installation Guide.
-}
+    for s in ${services[@]}
+    do
+	if [ "$2" = "-f" ]
+	then
+	    systemctl $1 $s
+	else
+	    systemctl $1 $s | head -3
+	fi
+	
+	if [ "$1" = "status" ]
+	then
+	    echo ""
+	fi
+    done
+fi
