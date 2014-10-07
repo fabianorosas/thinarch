@@ -1,25 +1,28 @@
 # Maintainer: Fabiano Rosas <fabianorosas@gmail.com>
-pkgname=thinarch
-pkgver=1.0
+pkgname=thinarch-git
+pkgver=0.9
 pkgrel=1
 pkgdesc="Arch Linux thin-client server"
 arch=('x86_64')
-#url="https://wiki.archlinux.org/index.php/Diskless_network_boot_NFS_root"
+url="https://github.com/fabianorosas/thinarch"
 license=('GPL')
 depends=("dhcp" "tftp-hpa" "nfs-utils" "devtools" "arch-install-scripts" "btrfs-progs")
+makedepends=('git')
+conflicts=('thinarch')
+provides=('thinarch')
 install=thinarch.install
-source=(dhcpd.conf exports tftpd.service thinarch.install ta-manage)
-md5sums=('6f4554e2176734530c3b3453b3e6bb24'
-         '75ab2111958fb6957f9a920a47836784'
-         'aa170ca00ad48b5053cc26b92e1083e4'
-         'c1ab598c3f98ec73fae372cdbba5fded'
-         '0a2094de179b3e8bf614327cea18cad1')
+source=("$pkgname"::'git+https://github.com/fabianorosas/thinarch.git')
+md5sums=('SKIP')
+
+pkgver() {
+  cd "$srcdir/$pkgname"
+  git describe --long | sed -r 's/([^-]*-g)/r\1/;s/-/./g'
+}
 
 package() {
-    cd "$srcdir"
-
-    install -Dm644 dhcpd.conf $pkgdir/etc/dhcpd.conf.thinarch
-    install -Dm644 tftpd.service $pkgdir/usr/lib/systemd/system/tftpd.service.thinarch
-    install -Dm644 exports $pkgdir/etc/exports.thinarch
-    install -Dm755 ta-manage $pkgdir/usr/bin/ta-manage
+  cd "$srcdir/$pkgname"
+  install --backup=numbered -Dm644 server/dhcp/dhcpd.conf    $pkgdir/etc/dhcpd.conf
+  install --backup=numbered -Dm644 server/tftp/tftpd.service $pkgdir/usr/lib/systemd/system/tftpd.service
+  install --backup=numbered -Dm644 server/nfs/exports        $pkgdir/etc/exports
+  install -Dm755 thinarch $pkgdir/usr/bin/thinarch
 }
