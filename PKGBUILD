@@ -1,6 +1,6 @@
 # Maintainer: Fabiano Rosas <fabianorosas@gmail.com>
 pkgname=thinarch-git
-pkgver=r26.b607dd4
+pkgver=r30.f09eae4
 pkgrel=1
 pkgdesc="Arch Linux thin-client server"
 arch=('x86_64')
@@ -20,7 +20,7 @@ pkgver() {
 }
 
 package() {
-  cd "$srcdir/$pkgname/pkg"
+  cd "$srcdir/$pkgname"
   ls
   install --backup=numbered -Dm644 server/dhcp/dhcpd.conf    $pkgdir/etc/dhcpd.conf
   install --backup=numbered -Dm644 server/tftp/tftpd.service $pkgdir/usr/lib/systemd/system/tftpd.service
