@@ -8,7 +8,7 @@ exec 4>/dev/null 3>/dev/null
 
 configure_server(){
   install --backup=numbered -Dm644 /etc/{thinarch/server/dhcp/,}dhcpd.conf
-  install --backup=numbered -Dm644 /etc/{thinarch/server/tftp/,}tftpd.service
+  install --backup=numbered -Dm644 /etc/thinarch/server/tftp/tftpd.service /usr/lib/systemd/system/tftpd.service
   install --backup=numbered -Dm644 /etc/{thinarch/server/nfs/,}exports
 }
 
@@ -33,10 +33,10 @@ configure_client_image(){
     arch-chroot "$root" /usr/bin/mkinitcpio -k /boot/vmlinuz-linux -c /etc/ta-mkinitcpio.conf -g /boot/initramfs-linux.img 
 
     arch-chroot "$root" grub-mknetdir --net-directory=/boot --subdir=grub >&3 2>&4
-    cp /usr/share/thinarch/client/grub.cfg "$root/boot/grub/grub.cfg"
+    cp /etc/thinarch/client/grub.cfg "$root/boot/grub/grub.cfg"
 
     echo "thinarch" > "$root/etc/hostname"
-    cp "/etc/thinarch/client/host" "$root/etc/hosts"
+    cp "/etc/thinarch/client/hosts" "$root/etc/hosts"
 
     post_install_advice;
 }
