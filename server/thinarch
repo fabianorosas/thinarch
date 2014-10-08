@@ -4,7 +4,7 @@ root=/srv/arch
 dhcp=yes
 install=no
 start=no
-exec 4>&2 3>&1
+exec 4>/dev/null 3>/dev/null
 
 configure_server(){
   install --backup=numbered -Dm644 /etc/{thinarch/server/dhcp/,}dhcpd.conf
@@ -126,7 +126,7 @@ while getopts ':dsihv-A:' OPTION ; do
 	    status;
 	    exit 0;;
 	v)
-	    exec 4>/dev/null 3>/dev/null;;
+	    exec 4>&2 3>&1;;
 	-)
 	    [ $OPTIND -ge 1 ] && optind=$(expr $OPTIND - 1 ) || optind=$OPTIND
             eval OPTION="\$$optind"
@@ -152,7 +152,7 @@ while getopts ':dsihv-A:' OPTION ; do
 		--root)
 		    root="$OPTARG";;
 		--verbose)
-		    exec 4>/dev/null 3>/dev/null;;
+		    exec 4>&2 3>&1;;
 		*)
 		    usage;
 		    exit 0;;
