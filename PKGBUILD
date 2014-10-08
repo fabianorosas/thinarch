@@ -1,6 +1,6 @@
 # Maintainer: Fabiano Rosas <fabianorosas@gmail.com>
 pkgname=thinarch-git
-pkgver=r37.e56c7d0
+pkgver=r38.e740d08
 pkgrel=1
 pkgdesc="Arch Linux thin-client server"
 arch=('x86_64')
