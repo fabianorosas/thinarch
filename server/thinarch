@@ -164,5 +164,5 @@ while getopts ':dsihv-A:' OPTION ; do
     esac
 done
 
-[ $install = yes] && make_client_image && exit0
-[ $start = yes] && start && exit0
+[ $install = yes ] && make_client_image && exit 0
+[ $start = yes ] && start && exit 0
