@@ -3,6 +3,7 @@
 root=/srv/arch
 dhcp=yes
 install=no
+start=no
 exec 4>&2 3>&1
 
 configure_server(){
@@ -135,7 +136,7 @@ while getopts ':dsihv-A:' OPTION ; do
 		--install)
 		    install=yes;;
 		--start)
-		    start;
+		    start=yes;
 		    exit 0;
 		--stop)
 		    stop;
@@ -163,4 +164,5 @@ while getopts ':dsihv-A:' OPTION ; do
     esac
 done
 
-[ $install = yes] && make_client_image
+[ $install = yes] && make_client_image && exit0
+[ $start = yes] && start && exit0
