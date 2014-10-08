@@ -1,6 +1,6 @@
 # Maintainer: Fabiano Rosas <fabianorosas@gmail.com>
 pkgname=thinarch-git
-pkgver=r33.e7a41c9
+pkgver=r37.e56c7d0
 pkgrel=1
 pkgdesc="Arch Linux thin-client server"
 arch=('x86_64')
@@ -24,9 +24,9 @@ package() {
 
   install -Dm755 server/thinarch $pkgdir/usr/bin/thinarch
 
-  install -Dm644 {,$pkgdir/etc/thinarch}server/dhcp/dhcpd.conf
-  install -Dm644 {,$pkgdir/etc/thinarch}server/tftp/tftpd.service 
-  install -Dm644 {,$pkgdir/etc/thinarch}server/nfs/exports
-
-  install -Dm644 client/{ta-mkinitcpio.conf,grub.cfg,hosts} $pkgdir/etc/thinarch/client
+  install -Dm644 {,$pkgdir/etc/thinarch/}server/dhcp/dhcpd.conf
+  install -Dm644 {,$pkgdir/etc/thinarch/}server/tftp/tftpd.service 
+  install -Dm644 {,$pkgdir/etc/thinarch/}server/nfs/exports
+  mkdir $pkgdir/etc/thinarch/client/
+  install -m644 client/{ta-mkinitcpio.conf,grub.cfg,hosts} $pkgdir/etc/thinarch/client/
 }
