@@ -2,30 +2,37 @@
 
 root=/srv/arch
 dhcp=yes
+exec 4>&2 3>&1
+
+configure_server(){
+  install --backup=numbered -Dm644 /etc/{thinarch/server/dhcp/,}dhcpd.conf
+  install --backup=numbered -Dm644 /etc/{thinarch/server/tftp/,}tftpd.service
+  install --backup=numbered -Dm644 /etc/{thinarch/server/nfs/,}exports
+}
 
 make_client_image() {
     truncate -s 2G /srv/arch.img
-    mkfs.btrfs /srv/arch.img >/dev/null
+    mkfs.btrfs /srv/arch.img >&3 2>&4
     mkdir -p "$root"
     mount -o loop,discard,compress=lzo /srv/arch.img "$root"
 
-    pacstrap -c -d "$root" base mkinitcpio-nfs-utils nfs-utils >/dev/null
-    pacman --noconfirm --root "$root" --dbpath "$root/var/lib/pacman" -S grub >/dev/null
-    pacman --noconfirm --root "$root" --dbpath "$root/var/lib/pacman" -S xorg-server xorg-server-utils xorg-xinit >/dev/nul
+    pacstrap -c -d "$root" base mkinitcpio-nfs-utils nfs-utils >&3 2>&4
+    pacman --noconfirm --root "$root" --dbpath "$root/var/lib/pacman" -S grub >&3 2>&4
+    pacman --noconfirm --root "$root" --dbpath "$root/var/lib/pacman" -S xorg-server xorg-server-utils xorg-xinit >&3 2>&4
 }
 
 configure_client_image(){
     sed 's/nfsmount/mount.nfs4/' "$root/usr/lib/initcpio/hooks/net" > "$root/usr/lib/initcpio/hooks/net_nfs4"
     cp $root/usr/lib/initcpio/install/net{,_nfs4}
 
-    cp "/usr/share/thinarch/client/ta-mkinitcpio.conf" "$root/etc/ta-mkinitcpio.conf"
+    cp "/etc/thinarch/client/ta-mkinitcpio.conf" "$root/etc/ta-mkinitcpio.conf"
     arch-chroot "$root" /usr/bin/mkinitcpio -k /boot/vmlinuz-linux -c /etc/ta-mkinitcpio.conf -g /boot/initramfs-linux.img 
 
-    arch-chroot "$root" grub-mknetdir --net-directory=/boot --subdir=grub >/dev/null
+    arch-chroot "$root" grub-mknetdir --net-directory=/boot --subdir=grub >&3 2>&4
     cp /usr/share/thinarch/client/grub.cfg "$root/boot/grub/grub.cfg"
 
     echo "thinarch" > "$root/etc/hostname"
-    cp /usr/share/thinarch/client/host "$root/etc/hosts"
+    cp "/etc/thinarch/client/host" "$root/etc/hosts"
 }
 
 post_install_advice() {
@@ -64,22 +71,20 @@ umount_client_image(){
     umount /srv/arch
 }
 
-#    services=("dhcpd4.service" "tftpd.socket" "tftpd.service" "nfs-server.service")
-#
-#    for s in ${services[@]}
-#    do
-#	if [ "$2" = "-f" ]
-#	then
-#	    systemctl $1 $s
-#	else
-#	    systemctl $1 $s | head -3
-#	fi
-#	
-#	if [ "$1" = "status" ]
-#	then
-#	    echo ""
-#	fi
-#    done
+start(){
+    mount_client_image;
+    [ $dhcp = yes ] && systemctl start dhcpd4.service
+    systemctl start tftpd.socket tftpd.service nfs-server.service
+}
+
+status(){
+    systemctl status dhcpd4.service tftpd.socket tftpd.service nfs-server.service
+}
+
+stop(){
+    systemctl stop dhcpd4.service tftpd.socket tftpd.service nfs-server.service
+    umount_client_image;
+}
 
 #-------------------------------------------------------------------------------
 usage() {
@@ -90,40 +95,50 @@ $0 <[options]>
     Options:
             -d   --nodhcp         Do not run a DHCP server
             -i   --install        Install client
-            -m   --mount          Mount client image
-            -u   --unmount        Unmount client image
                  --start          Start the server
                  --stop           Stop the server
             -s   --status         Show the status of all the services
+            -v   --verbose        Show lots of output
 EOF
 }
 
 [ $# = 0 ] && usage
 
-while getopts ':ih-A:' OPTION ; do
+while getopts ':dsihv-A:' OPTION ; do
     case "$OPTION" in
 	d)
 	    dhcp=no;;
 	h)
 	    usage;;   
 	i)
-#	    make_client_image;
-#	    configure_client_image;
+	    make_client_image;
+	    configure_client_image;
 	    post_install_advice;;
+	s)
+	    status;;
+	v)
+	    exec 4>/dev/null 3>/dev/null;;
 	-)
 	    [ $OPTIND -ge 1 ] && optind=$(expr $OPTIND - 1 ) || optind=$OPTIND
             eval OPTION="\$$optind"
             OPTARG=$(echo $OPTION | cut -d'=' -f2)
             OPTION=$(echo $OPTION | cut -d'=' -f1)
             case $OPTION in
-		--foo )
-		    lfoo=yes;;
-		--help )
+		--start)
+		    start;;
+		--stop)
+		    stop;;
+		--status)
+		    status;;
+		--nodhcp)
+		    dhcp=no;;
+		--help)
 		    usage;;
-		--arguments )
-		    larguments=yes;
-		    lARG="$OPTARG";; 
-		* )
+		--root)
+		    root="$OPTARG";;
+		--verbose)
+		    exec 4>/dev/null 3>/dev/null;;
+		*)
 		    usage;;
             esac
 	    OPTIND=1
@@ -132,4 +147,3 @@ while getopts ':ih-A:' OPTION ; do
 	    usage;;
     esac
 done
-
