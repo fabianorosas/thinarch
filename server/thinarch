@@ -77,7 +77,7 @@ umount_client_image(){
     umount /srv/arch
 }
 
-start(){
+start_server(){
     mount_client_image;
     [ $dhcp = yes ] && systemctl start dhcpd4.service
     systemctl start tftpd.socket tftpd.service nfs-server.service
@@ -87,9 +87,48 @@ status(){
     systemctl status dhcpd4.service tftpd.socket tftpd.service nfs-server.service
 }
 
-stop(){
+stop_server(){
     systemctl stop dhcpd4.service tftpd.socket tftpd.service nfs-server.service
     umount_client_image;
+}
+
+all_users(){
+    awk -F':' -v "min=$MIN" -v "max=$MAX" '!/nologin/ && $3 >= min && $3 <= max {print $1}' "$root/etc/passwd"
+}
+
+add_users(){
+    if [ "$(whoami)" != root ]; then
+	echo Please run this command as root. Not sudo. root.
+	exit
+    fi
+
+    grep ^$2 "$root/etc/group" > /dev/null
+    if [ $? == 1 ]
+    then
+	arch-chroot "$root" groupadd "$2"
+    fi
+    
+    while IFS= read -r line
+    do
+	login=$(cut -d: -f1 "$line")
+	grep "^$login" "$root/etc/passwd" > /dev/null
+	if [ $? == 1 ]
+	then
+	    arch-chroot "$root" useradd -m -g "$2" "$login"
+	fi
+    done < <(grep -v '^ *#' < "$1")
+    arch-chroot "$root" chpasswd < "$1"
+}
+
+cp_for_all(){
+    MIN=$(awk '/^UID_MIN/ {print $2}' "$root/etc/login.defs")
+    MAX=$(awk '/^UID_MAX/ {print $2}' "$root/etc/login.defs")
+
+    for login in $(all_users)
+    do
+	cp $1 $root/home/$login/
+	arch-chroot $root chown $login /home/$login/$1
+    done
 }
 
 #-------------------------------------------------------------------------------
@@ -98,14 +137,35 @@ usage() {
 Usage:
 $0 <[options]>
 
-    Options:
-            -d   --nodhcp         Do not run a DHCP server
-            -i   --install        Install client
-                 --start          Start the server
-                 --stop           Stop the server
-            -r   --root           The path where the chroot will be created
-            -s   --status         Show the status of all the services
-            -v   --verbose        Show lots of output
+Options:
+    -a  --addusers <file> <group>
+            Create and add the users specified in <file> to <group>.
+                <file> must be in the format "user:passwd" to be given as input
+                to chpasswd.
+
+    -d   --nodhcp
+            Do not run a DHCP server.
+
+    -f   --files <file ...>
+            Copy <files> to all users home dir.
+
+    -i   --install
+            Install client base image.
+
+    -r   --root
+            The path where the chroot will be created.
+
+    --start
+            Start the server.
+
+    --stop
+            Stop the server.
+
+    -s   --status
+            Show the status of all the services.
+
+    -v   --verbose
+            Show lots of output.
 EOF
 }
 
@@ -136,10 +196,9 @@ while getopts ':dsihv-A:' OPTION ; do
 		--install)
 		    install=yes;;
 		--start)
-		    start=yes;
-		    exit 0;;
+		    start=yes;;
 		--stop)
-		    stop;
+		    stop_server;
 		    exit 0;;
 		--status)
 		    status;
@@ -165,5 +224,6 @@ while getopts ':dsihv-A:' OPTION ; do
 done
 
 [ $install = yes ] && make_client_image && exit 0
-[ $start = yes ] && start && exit 0
+[ $start = yes ] && start_server && exit 0
+
 
