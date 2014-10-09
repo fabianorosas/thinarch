@@ -1,3 +1,9 @@
+post_install(){
+    install --backup=numbered -Dm644 /etc/{thinarch/server/dhcp/,}dhcpd.conf
+    install --backup=numbered -Dm644 /etc/thinarch/server/tftp/tftpd.service /usr/lib/systemd/system/tftpd.service
+    install --backup=numbered -Dm644 /etc/{thinarch/server/nfs/,}exports
+}
+
 pre_remove(){
     systemctl stop dhcpd4.service tftpd.socket tftpd.service nfs-server.service
     umount /srv/arch
