@@ -93,6 +93,9 @@ stop_server(){
 }
 
 all_users(){
+    MIN=$(awk '/^UID_MIN/ {print $2}' "$root/etc/login.defs")
+    MAX=$(awk '/^UID_MAX/ {print $2}' "$root/etc/login.defs")
+
     awk -F':' -v "min=$MIN" -v "max=$MAX" '!/nologin/ && $3 >= min && $3 <= max {print $1}' "$root/etc/passwd"
 }
 
@@ -110,7 +113,7 @@ add_users(){
     
     while IFS= read -r line
     do
-	login=$(cut -d: -f1 "$line")
+	login=$(echo "$line" | cut -d: -f1)
 	grep "^$login" "$root/etc/passwd" > /dev/null
 	if [ $? == 1 ]
 	then
@@ -121,13 +124,18 @@ add_users(){
 }
 
 cp_for_all(){
-    MIN=$(awk '/^UID_MIN/ {print $2}' "$root/etc/login.defs")
-    MAX=$(awk '/^UID_MAX/ {print $2}' "$root/etc/login.defs")
-
     for login in $(all_users)
     do
-	cp $1 $root/home/$login/
-	arch-chroot $root chown $login /home/$login/$1
+	echo $login
+	cp "$1" "$root/home/$login/"
+	arch-chroot "$root" chown "$login" "/home/$login/$1"
+    done
+}
+
+run_for_all(){
+    for login in $(all_users)
+    do
+	arch-chroot $root ${1//\$login/$login}
     done
 }
 
@@ -146,13 +154,18 @@ Options:
     -d   --nodhcp
             Do not run a DHCP server.
 
-    -f   --files <file ...>
-            Copy <files> to all users home dir.
+    -f   --file <file>
+            Copy <file> to all users home dir.
 
     -i   --install
             Install client base image.
 
-    -r   --root
+    -r "<cmd>"
+            Run "<cmd>" for all users. The string "\\\$login" will be substituted
+                by the users login. E.g: $0 -r "echo \\\$login" will echo the users
+                name, one at a time.
+
+   --root
             The path where the chroot will be created.
 
     --start
@@ -171,17 +184,24 @@ EOF
 
 [ $# = 0 ] && usage
 
-while getopts ':dsihv-A:' OPTION ; do
+while getopts ':dsihr:f:v-a:' OPTION ; do
     case "$OPTION" in
+	a)
+	    add_users "$OPTARG" "$3";
+	    exit 0;;
 	d)
 	    dhcp=no;;
+	f)
+	    cp_for_all "$OPTARG";
+	    exit 0;;
 	h)
 	    usage;
 	    exit 0;;
 	i)
 	    install=yes;;
 	r)
-	    root="$OPTARG";;
+	    run_for_all "$OPTARG";
+	    exit 0;;
 	s)
 	    status;
 	    exit 0;;
@@ -193,6 +213,12 @@ while getopts ':dsihv-A:' OPTION ; do
             OPTARG=$(echo $OPTION | cut -d'=' -f2)
             OPTION=$(echo $OPTION | cut -d'=' -f1)
             case $OPTION in
+		--addusers)
+		    add_users "$OPTARG" "$3";
+		    exit 0;;
+		--file)
+		    cp_for_all "$OPTARG";
+		    exit 0;;
 		--install)
 		    install=yes;;
 		--start)
